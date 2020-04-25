@@ -31,7 +31,7 @@ namespace TelegramBotTranslate
 
         static void Main(string[] args)
         {
-            BotClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
+            BotClient = new TelegramBotClient("token");
             excel = new Excel(path, 1); ;
             BotClient.OnMessage += BotClient_OnMessage;
             BotClient.OnMessageEdited += BotClient_OnMessage;
