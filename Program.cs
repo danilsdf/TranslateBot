@@ -18,8 +18,9 @@ namespace TelegramBotTranslate
         private static TelegramBotClient BotClient;
         public static InlineKeyboardMarkup keyboardTopic = new InlineKeyboardMarkup(new[]
         {
-        new [] { InlineKeyboardButton.WithCallbackData("Phrases", "Phrases"),},
-        new [] { InlineKeyboardButton.WithCallbackData("Irregular Verbs", "Irregular"),}
+        new [] { InlineKeyboardButton.WithCallbackData("At the Moment", "Now")},
+        new [] { InlineKeyboardButton.WithCallbackData("Clothes", "Clothes"),  InlineKeyboardButton.WithCallbackData("Phrases", "Phrases")},
+        new [] { InlineKeyboardButton.WithCallbackData("Irregular Verbs", "Irregular"), InlineKeyboardButton.WithCallbackData("House", "House") }
         });
         private static Excel excel;
         private static Random random = new Random();
@@ -31,7 +32,7 @@ namespace TelegramBotTranslate
 
         static void Main(string[] args)
         {
-            BotClient = new TelegramBotClient("token");
+            BotClient = new TelegramBotClient("Token");
             excel = new Excel(path, 1); ;
             BotClient.OnMessage += BotClient_OnMessage;
             BotClient.OnMessageEdited += BotClient_OnMessage;
@@ -47,7 +48,7 @@ namespace TelegramBotTranslate
             var message = e.Message;
             Console.WriteLine("The " + e.Message.Chat.FirstName + " Write: " + e.Message.Text);
             //return;
-            //if (e.Message.Chat.Id != 386219611) await BotClient.SendTextMessageAsync(message.Chat, $"Not for you, Kristina)");
+            if (e.Message.Chat.Id != 386219611) { await BotClient.SendTextMessageAsync(message.Chat, $"Not for you, Kristina)");return; }
             var users = DBUser.Users;
             foreach (User u in users)
             {
@@ -166,11 +167,155 @@ namespace TelegramBotTranslate
                 if (u.ChatId == e.CallbackQuery.From.Id)
                 {
                     await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
-                    if (callbackQuery.Data == "Phrases")
+                    if (callbackQuery.Data == "Now")
                     {
                         if (u.Topic != callbackQuery.Data)
                         {
-                            //excel.SelectWorkSheet(1);
+                            excel.SelectWorkSheet(1);
+                            u.ColumpRow = excel.GetColump();
+                            u.Topic = callbackQuery.Data;
+                            DBWord.DeleteWords();
+                            u.Usedwords = new List<int>();
+                            for (int i = 0; i <= u.ColumpRow; i++)
+                            {
+                                DBWord.Words.Add(new Word() { IdWord = i, English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                            }
+                            DBWord.SaveChanges();
+
+                        }
+                        u.ColumpRow = excel.GetColump();
+                        if ((u.ColumpRow - DBWord.Words.Count()) > 0)
+                        {
+                            for (int i = DBWord.Words.Count(); i <= u.ColumpRow; i++)
+                            {
+                                DBWord.Words.Add(new Word() { IdWord = i, English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                            }
+                            DBWord.SaveChanges();
+                        }
+                        var words = DBWord.Words;
+                        if (u.Usedwords.Count == u.ColumpRow)
+                        {
+                            u.Usedwords = new List<int>();
+                            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Good job, you translate all word\n" +
+                                "write:\n" +
+                                "/topic - to reselect a topic\n" +
+                                "/stop - to stop a game"); return;
+                        }
+                        int n = random.Next(0, u.ColumpRow);
+                        while (u.Usedwords.Contains(n))
+                        { n = random.Next(0, u.ColumpRow); }
+                        foreach (var word in words)
+                        {
+                            if (word.IdWord == n)
+                            {
+                                u.Usedwords.Add(n);
+                                u.Output = GetStringList(word.English);
+                                await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
+                                    $"{word.Russian}");
+                            }
+                        }
+                    }
+                    else if (callbackQuery.Data == "House")
+                    {
+                        if (u.Topic != callbackQuery.Data)
+                        {
+                            excel.SelectWorkSheet(4);
+                            u.ColumpRow = excel.GetColump();
+                            u.Topic = callbackQuery.Data;
+                            DBWord.DeleteWords();
+                            u.Usedwords = new List<int>();
+                            for (int i = 0; i <= u.ColumpRow; i++)
+                            {
+                                DBWord.Words.Add(new Word() { IdWord = i, English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                            }
+                            DBWord.SaveChanges();
+
+                        }
+                        u.ColumpRow = excel.GetColump();
+                        if ((u.ColumpRow - DBWord.Words.Count()) > 0)
+                        {
+                            for (int i = DBWord.Words.Count(); i <= u.ColumpRow; i++)
+                            {
+                                DBWord.Words.Add(new Word() { IdWord = i, English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                            }
+                            DBWord.SaveChanges();
+                        }
+                        var words = DBWord.Words;
+                        if (u.Usedwords.Count == u.ColumpRow)
+                        {
+                            u.Usedwords = new List<int>();
+                            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Good job, you translate all word\n" +
+                                "write:\n" +
+                                "/topic - to reselect a topic\n" +
+                                "/stop - to stop a game"); return;
+                        }
+                        int n = random.Next(0, u.ColumpRow);
+                        while (u.Usedwords.Contains(n))
+                        { n = random.Next(0, u.ColumpRow); }
+                        foreach (var word in words)
+                        {
+                            if (word.IdWord == n)
+                            {
+                                u.Usedwords.Add(n);
+                                u.Output = GetStringList(word.English);
+                                await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
+                                    $"{word.Russian}");
+                            }
+                        }
+                    }
+                    else if (callbackQuery.Data == "Clothes")
+                    {
+                        if (u.Topic != callbackQuery.Data)
+                        {
+                            excel.SelectWorkSheet(5);
+                            u.ColumpRow = excel.GetColump();
+                            u.Topic = callbackQuery.Data;
+                            DBWord.DeleteWords();
+                            u.Usedwords = new List<int>();
+                            for (int i = 0; i <= u.ColumpRow; i++)
+                            {
+                                DBWord.Words.Add(new Word() { IdWord = i, English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                            }
+                            DBWord.SaveChanges();
+
+                        }
+                        u.ColumpRow = excel.GetColump();
+                        if ((u.ColumpRow - DBWord.Words.Count()) > 0)
+                        {
+                            for (int i = DBWord.Words.Count(); i <= u.ColumpRow; i++)
+                            {
+                                DBWord.Words.Add(new Word() { IdWord = i, English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                            }
+                            DBWord.SaveChanges();
+                        }
+                        var words = DBWord.Words;
+                        if (u.Usedwords.Count == u.ColumpRow)
+                        {
+                            u.Usedwords = new List<int>();
+                            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Good job, you translate all word\n" +
+                                "write:\n" +
+                                "/topic - to reselect a topic\n" +
+                                "/stop - to stop a game"); return;
+                        }
+                        int n = random.Next(0, u.ColumpRow);
+                        while (u.Usedwords.Contains(n))
+                        { n = random.Next(0, u.ColumpRow); }
+                        foreach (var word in words)
+                        {
+                            if (word.IdWord == n)
+                            {
+                                u.Usedwords.Add(n);
+                                u.Output = GetStringList(word.English);
+                                await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
+                                    $"{word.Russian}");
+                            }
+                        }
+                    }
+                    else if (callbackQuery.Data == "Phrases")
+                    {
+                        if (u.Topic != callbackQuery.Data)
+                        {
+                            excel.SelectWorkSheet(2);
                             u.ColumpRow = excel.GetColump();
                             u.Topic = callbackQuery.Data;
                             DBWord.DeleteWords();
@@ -219,7 +364,7 @@ namespace TelegramBotTranslate
                         if (u.Topic != callbackQuery.Data)
                         {
                             u.ColumpRow = excel.GetColump();
-                            excel.SelectWorkSheet(2);
+                            excel.SelectWorkSheet(3);
                             u.Topic = callbackQuery.Data;
                             DBWord.DeleteWords();
                             u.Usedwords = new List<int>();
@@ -265,39 +410,39 @@ namespace TelegramBotTranslate
             }
             await DBUser.SaveChangesAsync();
         }
-        public static async void SendWord(int id)
-        {
-            DbSet<User> users = DBUser.Users;
-            foreach (User u in users)
-            {
-                if (u.ChatId == id)
-                {
-                    var words = DBWord.Words;
-                    if (u.Usedwords.Count == u.ColumpRow)
-                    {
-                        u.Usedwords = new List<int>();
-                        await BotClient.SendTextMessageAsync(id, "Good job, you translate all word\n" +
-                            "write:\n" +
-                            "/topic - to reselect a topic\n" +
-                            "/stop - to stop a game"); return;
-                    }
-                    int n = random.Next(0, u.ColumpRow);
-                    while (u.Usedwords.Contains(n))
-                    { n = random.Next(0, u.ColumpRow); }
-                    foreach (var word in words)
-                    {
-                        if (word.IdWord == n)
-                        {
-                            u.Usedwords.Add(n);
-                            u.Output = GetStringList(word.English);
-                            await BotClient.SendTextMessageAsync(id, "Please, translate it)\n" +
-                                $"{word.Russian}");
-                        }
-                    }
-                }
-            }
-            await DBUser.SaveChangesAsync();
-        }
+        //public static async void SendWord(int id)
+        //{
+        //    DbSet<User> users = DBUser.Users;
+        //    foreach (User u in users)
+        //    {
+        //        if (u.ChatId == id)
+        //        {
+        //            var words = DBWord.Words;
+        //            if (u.Usedwords.Count == u.ColumpRow)
+        //            {
+        //                u.Usedwords = new List<int>();
+        //                await BotClient.SendTextMessageAsync(id, "Good job, you translate all word\n" +
+        //                    "write:\n" +
+        //                    "/topic - to reselect a topic\n" +
+        //                    "/stop - to stop a game"); return;
+        //            }
+        //            int n = random.Next(0, u.ColumpRow);
+        //            while (u.Usedwords.Contains(n))
+        //            { n = random.Next(0, u.ColumpRow); }
+        //            foreach (var word in words)
+        //            {
+        //                if (word.IdWord == n)
+        //                {
+        //                    u.Usedwords.Add(n);
+        //                    u.Output = GetStringList(word.English);
+        //                    await BotClient.SendTextMessageAsync(id, "Please, translate it)\n" +
+        //                        $"{word.Russian}");
+        //                }
+        //            }
+        //        }
+        //    }
+        //    await DBUser.SaveChangesAsync();
+        //}
         private static List<string> GetStringList(string s)
         {
             List<string> list = new List<string>();
