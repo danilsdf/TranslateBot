@@ -1,8 +1,7 @@
 ﻿using System.Data.Entity;
 
-namespace TelegramBotTranslate.Users
+namespace TelegramBotTranslate
 {
-
     class UserContext : DbContext
     {
         public UserContext()
@@ -11,5 +10,4 @@ namespace TelegramBotTranslate.Users
 
         public DbSet<User> Users { get; set; }
     }
-
 }

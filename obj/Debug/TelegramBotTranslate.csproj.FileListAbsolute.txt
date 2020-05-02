@@ -1,3 +1,5 @@
+C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.csprojAssemblyReference.cache
+C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.csproj.CoreCompileInputs.cache
 C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\TelegramBotTranslate.exe.config
 C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\TelegramBotTranslate.exe
 C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\TelegramBotTranslate.pdb
@@ -9,8 +11,6 @@ C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\EntityFramework.xm
 C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\EntityFramework.SqlServer.xml
 C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\Newtonsoft.Json.xml
 C:\Users\Олег\source\repos\TelegramBotTranslate\bin\Debug\Telegram.Bot.xml
-C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.csprojAssemblyReference.cache
-C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.csproj.CoreCompileInputs.cache
 C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.csproj.CopyComplete
 C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.exe
 C:\Users\Олег\source\repos\TelegramBotTranslate\obj\Debug\TelegramBotTranslate.pdb

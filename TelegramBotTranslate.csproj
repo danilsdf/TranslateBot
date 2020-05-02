@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EF868E8A-D108-4697-A566-796223E75822}</ProjectGuid>
+    <ProjectGuid>{BE0137A2-4B2C-43BE-83C5-7032239512C7}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>TelegramBotTranslate</RootNamespace>
     <AssemblyName>TelegramBotTranslate</AssemblyName>
@@ -66,10 +66,9 @@
     <Compile Include="Excel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Users\User.cs" />
-    <Compile Include="Users\UserContext.cs" />
-    <Compile Include="Words\Word.cs" />
-    <Compile Include="Words\WordContext.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="UserContext.cs" />
+    <Compile Include="Word.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
