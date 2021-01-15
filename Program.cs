@@ -13,11 +13,17 @@ namespace TelegramBotTranslate
         private static TelegramBotClient BotClient;
         public static InlineKeyboardMarkup keyboardTopic = new InlineKeyboardMarkup(new[]
         {
-        new [] { InlineKeyboardButton.WithCallbackData("At the moment", "At the moment") },
-        new [] { InlineKeyboardButton.WithCallbackData("Clothes", "Clothes"),  InlineKeyboardButton.WithCallbackData("Phrases", "Phrases")},
+        new [] { InlineKeyboardButton.WithCallbackData("Programming", "Programming"),  InlineKeyboardButton.WithCallbackData("Personality", "Personality") },
+        new [] { InlineKeyboardButton.WithCallbackData("ITverbs", "ITverbs"),  InlineKeyboardButton.WithCallbackData("Hardware", "Hardware") },
+        new [] { InlineKeyboardButton.WithCallbackData("FromBook_2", "FromBook_2"),  InlineKeyboardButton.WithCallbackData("FromBook", "FromBook") },
+        new [] { InlineKeyboardButton.WithCallbackData("Phrases", "Phrases"),  InlineKeyboardButton.WithCallbackData("Different", "Different") },
+        new [] { InlineKeyboardButton.WithCallbackData("Phrases_2", "Phrases_2"), InlineKeyboardButton.WithCallbackData("Different_2", "Different_2") },
         new [] { InlineKeyboardButton.WithCallbackData("Irragular verbs", "Irragular verbs"), InlineKeyboardButton.WithCallbackData("House Home", "House Home") },
-        new [] { InlineKeyboardButton.WithCallbackData("Crime", "Crime"), InlineKeyboardButton.WithCallbackData("Verbs for cooking", "Verbs for cooking") }
-        }); 
+        new [] { InlineKeyboardButton.WithCallbackData("Clothes", "Clothes"), InlineKeyboardButton.WithCallbackData("Crime", "Crime") },
+        new [] { InlineKeyboardButton.WithCallbackData("Verbs for cooking", "Verbs for cooking"), InlineKeyboardButton.WithCallbackData("Phrases for holiday", "Phrases for holiday"), },
+        new [] { InlineKeyboardButton.WithCallbackData("Ingredients", "Ingredients"), InlineKeyboardButton.WithCallbackData("MeatFishBerryTaste", "MeatFishBerryTaste") },
+        new [] { InlineKeyboardButton.WithCallbackData("In the kitchen", "In the kitchen"), InlineKeyboardButton.WithCallbackData("Different_3", "Different_3") },
+        });
         private static Excel excel;
         private static Random random = new Random();
         private static bool here = false;
@@ -63,53 +69,24 @@ namespace TelegramBotTranslate
                 if (u.ChatId == message.Chat.Id)
                 {
                     here = true;
-                    {
-                        //string[] names = excel.GetNames();
-                        //for (int i = 1; i <= excel.GetSheet(); i++)
-                        //{
-                        //    excel.SelectWorkSheet(i);
-                        //    if (u.Words.ContainsKey(names[i - 1]))
-                        //    {
-                        //        if (u.Words[names[i - 1]].Count != excel.GetColump())
-                        //        {
-                        //            u.Words.Remove(names[i - 1]);
-                        //            List<Word> words1 = new List<Word>();
-                        //            for (int j = 0; j <= excel.GetColump(); j++)
-                        //            {
-                        //                words1.Add(new Word() { English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
-                        //            }
-                        //            u.Words.Add(names[i - 1], words1);
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        List<Word> words1 = new List<Word>();
-                        //        for (int j = 0; j <= excel.GetColump(); j++)
-                        //        {
-                        //            words1.Add(new Word() { English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
-                        //        }
-                        //        u.Words.Add(names[i - 1], words1);
-                        //    }
-                        //}
-                    }
                 }
             }
             if (!here)
             {
                 {
-                    //Dictionary<string, List<Word>> words = new Dictionary<string, List<Word>>();
-                    //string[] names = excel.GetNames();
-                    //for (int i = 1; i <= excel.GetSheet(); i++)
-                    //{
-                    //    List<Word> words1 = new List<Word>();
-                    //    excel.SelectWorkSheet(i);
+                    Dictionary<string, List<Word>> words = new Dictionary<string, List<Word>>();
+                    string[] names = excel.GetNames();
+                    for (int i = 1; i <= excel.GetSheet(); i++)
+                    {
+                        List<Word> words1 = new List<Word>();
+                        excel.SelectWorkSheet(i);
 
-                    //    for (int j = 0; j <= excel.GetColump(); j++)
-                    //    {
-                    //        words1.Add(new Word() { English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
-                    //    }
-                    //    words.Add(names[i - 1], words1);
-                    //}
+                        for (int j = 0; j <= excel.GetColump(); j++)
+                        {
+                            words1.Add(new Word() { English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
+                        }
+                        words.Add(names[i - 1], words1);
+                    }
                 }
                 DBUser.Users.Add(new User { ChatId = message.Chat.Id});
                 DBUser.SaveChanges();
@@ -204,98 +181,16 @@ namespace TelegramBotTranslate
                 if (u.ChatId == e.CallbackQuery.From.Id && u.Topic == "Topic")
                 {
                     await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
-                    if (callbackQuery.Data == "At the moment")
                     {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(1, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
+                        u.Topic = callbackQuery.Data;
+                        u.TopicWords = words[callbackQuery.Data];
                     }
-                    else if (callbackQuery.Data == "House Home")
-                    {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(0, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
-                    }
-                    else if (callbackQuery.Data == "Clothes")
-                    {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(0, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
-                    }
-                    else if (callbackQuery.Data == "Phrases")
-                    {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(0, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
-                    }
-                    else if (callbackQuery.Data == "Irragular verbs")
-                    {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(0, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
-                    }
-                    else if (callbackQuery.Data == "Crime")
-                    {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(0, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
-                    }
-                    else if (callbackQuery.Data == "Verbs for cooking")
-                    {
-                        //if (u.Topic != callbackQuery.Data)
-                        {
-                            u.Topic = callbackQuery.Data;
-                            u.TopicWords = words[callbackQuery.Data];
-                        }
-                        int nt = random.Next(0, u.TopicWords.Count);
-                        u.Output = GetStringList(u.TopicWords[nt].English);
-                        await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                            $"{u.TopicWords[nt].Russian}");
-                        u.TopicWords.RemoveAt(nt);
-                    }
-                }
+                    int nt = random.Next(1, u.TopicWords.Count);
+                    u.Output = GetStringList(u.TopicWords[nt].English);
+                    await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
+                        $"{u.TopicWords[nt].Russian}");
+                    u.TopicWords.RemoveAt(nt);
+                }             
             }
             await DBUser.SaveChangesAsync();
         }
