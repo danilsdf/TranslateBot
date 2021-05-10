@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Configuration;
+using System.Data.SqlClient;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
@@ -18,36 +19,21 @@ namespace TelegramBotTranslate
         new [] { InlineKeyboardButton.WithCallbackData("FromBook_2", "FromBook_2"),  InlineKeyboardButton.WithCallbackData("FromBook", "FromBook") },
         new [] { InlineKeyboardButton.WithCallbackData("Phrases", "Phrases"),  InlineKeyboardButton.WithCallbackData("Different", "Different") },
         new [] { InlineKeyboardButton.WithCallbackData("Phrases_2", "Phrases_2"), InlineKeyboardButton.WithCallbackData("Different_2", "Different_2") },
-        new [] { InlineKeyboardButton.WithCallbackData("Irragular verbs", "Irragular verbs"), InlineKeyboardButton.WithCallbackData("House Home", "House Home") },
+        new [] { InlineKeyboardButton.WithCallbackData("Irragular verbs", "Irragular verbs"), InlineKeyboardButton.WithCallbackData("House Home", "House_Home") },
         new [] { InlineKeyboardButton.WithCallbackData("Clothes", "Clothes"), InlineKeyboardButton.WithCallbackData("Crime", "Crime") },
-        new [] { InlineKeyboardButton.WithCallbackData("Verbs for cooking", "Verbs for cooking"), InlineKeyboardButton.WithCallbackData("Phrases for holiday", "Phrases for holiday"), },
+        new [] { InlineKeyboardButton.WithCallbackData("Verbs for cooking", "Verbs_for_cooking"), InlineKeyboardButton.WithCallbackData("Phrases for holiday", "Phrases_for_holiday"), },
         new [] { InlineKeyboardButton.WithCallbackData("Ingredients", "Ingredients"), InlineKeyboardButton.WithCallbackData("MeatFishBerryTaste", "MeatFishBerryTaste") },
-        new [] { InlineKeyboardButton.WithCallbackData("In the kitchen", "In the kitchen"), InlineKeyboardButton.WithCallbackData("Different_3", "Different_3") },
+        new [] { InlineKeyboardButton.WithCallbackData("In the kitchen", "In_the_kitchen"), InlineKeyboardButton.WithCallbackData("Different_3", "Different_3") },
         });
         private static Excel excel;
         private static Random random = new Random();
         private static bool here = false;
         public static UserContext DBUser = new UserContext();
-        public static Dictionary<string, List<Word>> words = new Dictionary<string, List<Word>>();
 
-        private static string path = @"C:\Users\Олег\Desktop\Words.xlsx";
+        private static string path = @"C:\Users\Admin\Desktop\Words.xlsx";
 
         static void Main()
         {
-            excel = new Excel(path, 1);
-            string[] names = excel.GetNames();
-            for (int i = 1; i <= excel.GetSheet(); i++)
-            {
-                List<Word> words1 = new List<Word>();
-                excel.SelectWorkSheet(i);
-                for (int j = 0; j <= excel.GetColump(); j++)
-                {
-                    words1.Add(new Word() { English = excel.ReadExcelString(j, 2), Russian = excel.ReadExcelString(j, 0) });
-                }
-                words.Add(names[i - 1], words1);
-            }
-            excel.Close();
-            Console.WriteLine("Ready");
             BotClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
             BotClient.OnMessage += BotClient_OnMessage;
             BotClient.OnCallbackQuery += BotClient_OnCallbackQuery;
@@ -73,20 +59,9 @@ namespace TelegramBotTranslate
             }
             if (!here)
             {
+                if (!SqlModel.Check("Programming"))
                 {
-                    Dictionary<string, List<Word>> words = new Dictionary<string, List<Word>>();
-                    string[] names = excel.GetNames();
-                    for (int i = 1; i <= excel.GetSheet(); i++)
-                    {
-                        List<Word> words1 = new List<Word>();
-                        excel.SelectWorkSheet(i);
-
-                        for (int j = 0; j <= excel.GetColump(); j++)
-                        {
-                            words1.Add(new Word() { English = excel.ReadExcelString(i, 2), Russian = excel.ReadExcelString(i, 0) });
-                        }
-                        words.Add(names[i - 1], words1);
-                    }
+                    InsertFromExcel();
                 }
                 DBUser.Users.Add(new User { ChatId = message.Chat.Id});
                 DBUser.SaveChanges();
@@ -99,13 +74,19 @@ namespace TelegramBotTranslate
                 {
                     switch (message.Text)
                     {
-
                         case "/start":
-
                             await BotClient.SendTextMessageAsync(message.Chat, $"Hi, {message.Chat.FirstName}\n" +
                                 $"I was created only for Danil Kravchenko))\n" +
                                 $"So, if you are not Danil, be happy, you are his friend))\n" +
                                 $"Write 3 forms like \"first/second/third\"");
+                            u.Topic = "Topic";
+                            await BotClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: keyboardTopic);
+                            break;
+                        case "/insert":
+                            await BotClient.SendTextMessageAsync(message.Chat, $"I am working");
+                            InsertFromExcel();
+                            u.Topic = "Topic";
                             await BotClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
                                 replyMarkup: keyboardTopic);
                             break;
@@ -154,7 +135,7 @@ namespace TelegramBotTranslate
                             if (u.TopicWords.Count == 0)
                             {
                                 u.Topic = string.Empty;
-                                await BotClient.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
+                                await BotClient.SendTextMessageAsync(message.Chat, "Good job, you translate all words\n" +
                                     "write:\n" +
                                     "/topic - to reselect a topic\n" +
                                     "/stop - to stop a game"); return;
@@ -183,7 +164,7 @@ namespace TelegramBotTranslate
                     await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
                     {
                         u.Topic = callbackQuery.Data;
-                        u.TopicWords = words[callbackQuery.Data];
+                        u.TopicWords = SqlModel.GetWords(callbackQuery.Data);
                     }
                     int nt = random.Next(1, u.TopicWords.Count);
                     u.Output = GetStringList(u.TopicWords[nt].English);
@@ -206,6 +187,22 @@ namespace TelegramBotTranslate
             }
             if (list == null) list.Add(s);
             return list;
+        }
+        private static void InsertFromExcel()
+        {
+            excel = new Excel(path, 1);
+            string[] names = excel.GetNames();
+            for (int i = 0; i < excel.GetSheet(); i++)
+            {
+                Console.WriteLine($"I am working on {names[i]}");
+                SqlModel.RecreateTable(names[i]);
+                excel.SelectWorkSheet(i+1);
+                for (int j = 0; j <= excel.GetColump(); j++)
+                {
+                    SqlModel.InsertTable(names[i], excel.ReadExcelString(j, 2), excel.ReadExcelString(j, 0));
+                }
+            }
+            excel.Close();
         }
         public static string ToStringList(List<string> strs)
         {

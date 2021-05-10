@@ -30,3 +30,11 @@ D:\TranslateBot\bin\Debug\EntityFramework.SqlServer.xml
 D:\TranslateBot\bin\Debug\Newtonsoft.Json.xml
 D:\TranslateBot\bin\Debug\Telegram.Bot.xml
 D:\TranslateBot\obj\Debug\TelegramBotTranslate.csproj.CopyComplete
+D:\TranslateBot\bin\Debug\System.Configuration.ConfigurationManager.dll
+D:\TranslateBot\bin\Debug\System.Security.AccessControl.dll
+D:\TranslateBot\bin\Debug\System.Security.Permissions.dll
+D:\TranslateBot\bin\Debug\System.Security.Principal.Windows.dll
+D:\TranslateBot\bin\Debug\System.Configuration.ConfigurationManager.xml
+D:\TranslateBot\bin\Debug\System.Security.AccessControl.xml
+D:\TranslateBot\bin\Debug\System.Security.Permissions.xml
+D:\TranslateBot\bin\Debug\System.Security.Principal.Windows.xml
