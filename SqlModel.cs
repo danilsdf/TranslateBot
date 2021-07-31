@@ -28,6 +28,7 @@ namespace TelegramBotTranslate
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     try
                     {
                         exists = true;
@@ -87,17 +88,19 @@ namespace TelegramBotTranslate
                 }
             }
         }
-        public static void InsertTable(string tableName, string eng, string rus)
+        public static void InsertTable(string tableName, List<Word> words)
         {
             using (SqlConnection con = new SqlConnection(GetConnectionString()))
             {
                 try
                 {
                     con.Open();
-                    using (SqlCommand command = new SqlCommand("INSERT INTO " + tableName + $" Values(N'{rus}', N'{eng}')", con))
+                    foreach (var item in words)
                     {
-                        Console.WriteLine(command.CommandText);
-                        command.ExecuteNonQuery();
+                        using (SqlCommand command = new SqlCommand("INSERT INTO " + tableName + $" Values(N'{item.Russian}', N'{item.English}')", con))
+                        {
+                            command.ExecuteNonQuery();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -116,7 +119,6 @@ namespace TelegramBotTranslate
                     connection.Open();
                     using (SqlCommand command = new SqlCommand($"SELECT * FROM " + tableName, connection))
                     {
-                        Console.WriteLine(command.CommandText);
                         SqlDataReader reader = command.ExecuteReader();
 
                     if (reader.HasRows)
@@ -125,7 +127,6 @@ namespace TelegramBotTranslate
                             {
                                 string rus = reader.GetValue(0).ToString();
                                 string eng = reader.GetValue(1).ToString();
-                                Console.WriteLine($"{rus} {eng}");
 
                                 words.Add(new Word() { English = eng, Russian = rus });
                             }

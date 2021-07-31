@@ -6,7 +6,7 @@ namespace TelegramBotTranslate
     public class Excel
     {
         string path = string.Empty;
-        _Application excel = new _Excel.Application();
+        _Application excel = new Application();
         Workbook wb;
         Worksheet ws;
         public Excel(string path, int Sheet)
@@ -15,7 +15,7 @@ namespace TelegramBotTranslate
             wb = excel.Workbooks.Open(path);
             ws = wb.Worksheets[Sheet];
         }
-        public int GetColump()
+        public int GetColumn()
         {
             int CountOfColumbs = 0;
             for (int i = 1; ws.Cells[i, 1].Value2 != null; i++)
@@ -37,14 +37,14 @@ namespace TelegramBotTranslate
             return names;
 
         }
-        public string ReadExcelString(int i, int j)
+        public Word? ReadWordFromExcelString(int i)
         {
-            //i++;j++;
-            if (ws.Cells[i + 1, j + 1].Value2 != null)
-            {
-                return ws.Cells[i + 1, j + 1].Value2;
-            }
-            else return string.Empty;
+            var rus = ws.Cells[i + 1, 1].Value2;
+            var eng = ws.Cells[i + 1, 3].Value2;
+
+            if (rus == null) return null;
+
+            return new Word { Russian = rus, English = eng };
         }
         public void SelectWorkSheet(int n)
         {
