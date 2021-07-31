@@ -24,7 +24,7 @@ namespace TelegramBotTranslate
         private static string pathToNewWords = @"C:\Users\Admin\Desktop\New_Words.xlsx";
 
         static void Main()
-        { 
+        { //asdfas
             //path = pathToWords;
             path = pathToNewWords;
             //path = pathToAllWords;
