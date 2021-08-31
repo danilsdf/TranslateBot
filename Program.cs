@@ -9,96 +9,109 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBotTranslate
 {
-    class Program
+    internal class Program
     {
-        private static TelegramBotClient BotClient;
-        public static InlineKeyboardMarkup keyboardTopic;
-        private static Excel excel;
-        private static Random random = new Random();
-        private static bool here = false;
-        public static UserContext DBUser = new UserContext();
+        private static TelegramBotClient _botClient;
+        public static InlineKeyboardMarkup KeyboardTopic;
+        private static Excel _excel;
+        private static readonly Random Random = new Random();
+        private static bool _here = false;
+        public static UserContext DbUser = new UserContext();
 
-        private static string path;
-        private static string pathToWords = @"C:\Users\Admin\Desktop\Words.xlsx";
-        private static string pathToAllWords = @"C:\Users\Admin\Desktop\All_Words.xlsx";
-        private static string pathToNewWords = @"C:\Users\Admin\Desktop\New_Words.xlsx";
+        private static string _path;
+        public static string PathToWords { get; } = @"C:\Users\Admin\Desktop\Words.xlsx";
+        private const string PathToAllWords = @"C:\Users\Admin\Desktop\All_Words.xlsx";
+        private const string PathToNewWords = @"C:\Users\Admin\Desktop\New_Words.xlsx";
 
-        static void Main()
-        { 
-            //path = pathToWords;
-            path = pathToNewWords;
-            //path = pathToAllWords;
-            BotClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
-            BotClient.OnMessage += BotClient_OnMessage;
-            BotClient.OnCallbackQuery += BotClient_OnCallbackQuery;
-            BotClient.StartReceiving();
+        private static void Main()
+        {
+            _path = PathToNewWords;
+            _botClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
+            _botClient.OnMessage += BotClient_OnMessage;
+            _botClient.OnCallbackQuery += BotClient_OnCallbackQuery;
+            _botClient.StartReceiving();
             CreateKeyBoard();
             Console.ReadKey();
         }
 
         private static async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
-            if (e.Message.Type == MessageType.Document)
-            {
-                var doc = await BotClient.GetFileAsync(e.Message.Document.FileId);
-                FileStream fs = new FileStream(@"C:\Users\Admin\Desktop\FileBot.xlsx", FileMode.Create);
-                await BotClient.GetInfoAndDownloadFileAsync(doc.FileId, fs);
-            }
             if (e.Message.Text == null) return;
             var message = e.Message;
             Console.WriteLine("The " + e.Message.Chat.FirstName + " Write: " + e.Message.Text);
             //return;
             //if (e.Message.Chat.Id == 386219611) { await BotClient.SendTextMessageAsync(message.Chat, $"Not for you, Kristina)"); return; }
             //if (e.Message.Chat.Id == 425901772) { await BotClient.SendTextMessageAsync(message.Chat, $"Пошел нахууй!"); return; }
-            var users = DBUser.Users;
-            foreach (User u in users)
+            var users = DbUser.Users;
+            foreach (var u in users)
             {
                 if (u.ChatId == message.Chat.Id)
                 {
-                    here = true;
+                    _here = true;
                 }
             }
-            if (!here)
+            if (!_here)
             {
                 if (!SqlModel.Check("Programming"))
                 {
                     InsertFromExcel();
                 }
-                DBUser.Users.Add(new User { ChatId = message.Chat.Id});
-                DBUser.SaveChanges();
+                DbUser.Users.Add(new User { ChatId = message.Chat.Id});
+                DbUser.SaveChanges();
             }
 
-            users = DBUser.Users;
-            foreach (User u in users)
+            users = DbUser.Users;
+            foreach (var u in users)
             {
                 if (u.ChatId == message.Chat.Id)
                 {
                     switch (message.Text)
                     {
                         case "/start":
-                            await BotClient.SendTextMessageAsync(message.Chat, $"Hi, {message.Chat.FirstName}\n" +
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Hi, {message.Chat.FirstName}\n" +
                                 $"I was created only for Danil Kravchenko))\n" +
                                 $"So, if you are not Danil, be happy, you are his friend))\n" +
                                 $"Write 3 forms like \"first/second/third\"");
                             u.Topic = "Topic";
-                            await BotClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: keyboardTopic);
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: KeyboardTopic);
                             break;
                         case "/insert":
-                            await BotClient.SendTextMessageAsync(message.Chat, $"I am working");
+                            await _botClient.SendTextMessageAsync(message.Chat, $"I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await BotClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: keyboardTopic);
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: KeyboardTopic);
+                            break;
+                        case "/allWords":
+                            _path = PathToAllWords;
+                            CreateKeyBoard();
+                            u.Topic = "Topic";
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: KeyboardTopic);
+                            break;
+                        case "/newWords":
+                            _path = PathToNewWords;
+                            CreateKeyBoard();
+                            u.Topic = "Topic";
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: KeyboardTopic);
+                            break;
+                        case "/words":
+                            _path = PathToWords;
+                            CreateKeyBoard();
+                            u.Topic = "Topic";
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: KeyboardTopic);
                             break;
                         case "/topic":
                             u.Topic = "Topic";
-                            await BotClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: keyboardTopic); break;
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                                replyMarkup: KeyboardTopic); break;
                         case "/stop":
                             u.Topic = string.Empty;
                             u.TopicWords = new List<Word>();
-                            await BotClient.SendTextMessageAsync(message.Chat, $"Good game\n" +
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Good game\n" +
                                 $"Hurry back, I`m waiting for you)*");
                             break;
                         default:
@@ -106,104 +119,105 @@ namespace TelegramBotTranslate
                             {
                                 if (e.Message.Type == MessageType.Unknown)
                                 {
-                                    await BotClient.SendTextMessageAsync(message.Chat, $"its Doc");
+                                    await _botClient.SendTextMessageAsync(message.Chat, $"its Doc");
                                 }
                                 else
                                 {
-                                    await BotClient.SendTextMessageAsync(message.Chat, $"I don`t understand you\n" +
+                                    await _botClient.SendTextMessageAsync(message.Chat, $"I don`t understand you\n" +
                                                                                        $"Please, write /topic - to select a topic and start a game");
                                 }
 
                                 return;
                             }
                             u.Input = GetStringList(message.Text);
-                            foreach (string str in u.Input)
+                            foreach (var str in u.Input)
                             {
                                 if (!u.Output.Contains(str))
                                 {
-                                    await BotClient.SendTextMessageAsync(message.Chat, $"Oh no, you made mistake\n" +
+                                    await _botClient.SendTextMessageAsync(message.Chat, $"Oh no, you made mistake\n" +
                                         $"The right translate is \"{ToStringList(u.Output)}\"");
                                     if (u.TopicWords.Count == 0)
                                     {
                                         u.Topic = string.Empty;
-                                        await BotClient.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
+                                        await _botClient.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
                                             "write:\n" +
                                             "/topic - to reselect a topic\n" +
                                             "/stop - to stop a game"); return;
                                     }
-                                    int n = random.Next(0, u.TopicWords.Count);
+                                    var n = Random.Next(0, u.TopicWords.Count);
                                     u.Output = GetStringList(u.TopicWords[n].English);
-                                    await BotClient.SendTextMessageAsync(message.Chat, "Please, translate it)\n" +
+                                    await _botClient.SendTextMessageAsync(message.Chat, "Please, translate it)\n" +
                                         $"{u.TopicWords[n].Russian}");
                                     u.TopicWords.RemoveAt(n);
                                     return;
                                 }
                             }
-                            await BotClient.SendTextMessageAsync(message.Chat, $"Cool, you are right\n" +
+                            await _botClient.SendTextMessageAsync(message.Chat, $"Cool, you are right\n" +
                                         $"Translate is \"{ToStringList(u.Output)}\"");
                             if (u.TopicWords.Count == 0)
                             {
                                 u.Topic = string.Empty;
-                                await BotClient.SendTextMessageAsync(message.Chat, "Good job, you translate all words\n" +
+                                await _botClient.SendTextMessageAsync(message.Chat, "Good job, you translate all words\n" +
                                     "write:\n" +
                                     "/topic - to reselect a topic\n" +
                                     "/stop - to stop a game"); return;
                             }
-                            int nt = random.Next(0, u.TopicWords.Count);
+                            var nt = Random.Next(0, u.TopicWords.Count);
                             u.Output = GetStringList(u.TopicWords[nt].English);
-                            await BotClient.SendTextMessageAsync(message.Chat, "Please, translate it)\n" +
+                            await _botClient.SendTextMessageAsync(message.Chat, "Please, translate it)\n" +
                                 $"{u.TopicWords[nt].Russian}");
                             u.TopicWords.RemoveAt(nt);
                             break;
                     }
                 }
             }
-            await DBUser.SaveChangesAsync();
+            await DbUser.SaveChangesAsync();
         }
         private static async void BotClient_OnCallbackQuery(object sender, CallbackQueryEventArgs e)
         {
             var callbackQuery = e.CallbackQuery;
             Console.WriteLine("The " + e.CallbackQuery.From.Id + " Select: " + e.CallbackQuery.Data);
             //return;
-            var users = DBUser.Users;
-            foreach (User u in users)
+            var users = DbUser.Users;
+            foreach (var u in users)
             {
-                if (u.ChatId == e.CallbackQuery.From.Id && u.Topic == "Topic")
+                if (u.ChatId != e.CallbackQuery.From.Id || u.Topic != "Topic") continue;
+                await _botClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
                 {
-                    await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
-                    {
-                        u.Topic = callbackQuery.Data;
-                        u.TopicWords = SqlModel.GetWords(callbackQuery.Data).Select(s => s.Trim()).ToList();
-                    }
-                    int nt = random.Next(1, u.TopicWords.Count);
-                    u.Output = GetStringList(u.TopicWords[nt].English.Trim());
-                    await BotClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
-                        $"{u.TopicWords[nt].Russian}");
-                    u.TopicWords.RemoveAt(nt);
-                }             
+                    u.Topic = callbackQuery.Data;
+                    u.TopicWords = SqlModel.GetWords(callbackQuery.Data).Select(s => s.Trim()).ToList();
+                }
+                var nt = Random.Next(1, u.TopicWords.Count);
+                u.Output = GetStringList(u.TopicWords[nt].English.Trim());
+                await _botClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, translate it)\n" +
+                                                                            $"{u.TopicWords[nt].Russian}");
+                u.TopicWords.RemoveAt(nt);
             }
-            await DBUser.SaveChangesAsync();
+            await DbUser.SaveChangesAsync();
         }
         private static List<string> GetStringList(string s)
         {
-            List<string> list = new List<string>();
-            foreach (string str in s.Split('/'))
+            var list = new List<string>();
+            for (var index = 0; index < s.Split('/').Length; index++)
             {
-                foreach (string st in str.Split(' '))
+                var str = s.Split('/')[index];
+                for (var i = 0; i < str.Split(' ').Length; i++)
                 {
+                    var st = str.Split(' ')[i];
                     list.Add(st.ToLower());
                 }
             }
-            if (list == null) list.Add(s);
+
+            if (list.Any()) list.Add(s);
             return list;
         }
         private static void CreateKeyBoard()
         {
-            excel = new Excel(path, 1);
+            _excel = new Excel(_path, 1);
 
-            string[] names = excel.GetNames();
-            List<InlineKeyboardButton[]> inlineKeyboardButtons = new List<InlineKeyboardButton[]>();
-            for (int i = 0; i < names.Length; i += 2)
+            var names = _excel.GetNames();
+            var inlineKeyboardButtons = new List<InlineKeyboardButton[]>();
+            for (var i = 0; i < names.Length; i += 2)
             {
                 var first = InlineKeyboardButton.WithCallbackData(names[i], names[i]);
                 if (i + 2 > names.Length)
@@ -216,41 +230,39 @@ namespace TelegramBotTranslate
                     inlineKeyboardButtons.Add(new[] { first, second });
                 }
             }
-            keyboardTopic = new InlineKeyboardMarkup(inlineKeyboardButtons);
-            excel.Close();
+            KeyboardTopic = new InlineKeyboardMarkup(inlineKeyboardButtons);
+            _excel.Close();
         }
         private static void InsertFromExcel()
         {
-            excel = new Excel(path, 1);
-            string[] names = excel.GetNames();
-            for (int i = 0; i < excel.GetSheet(); i++)
+            _excel = new Excel(_path, 1);
+            var names = _excel.GetNames();
+            for (var i = 0; i < _excel.GetSheet(); i++)
             {
                 var list = new List<Word>();
                 Console.WriteLine($"I am working on {names[i]}");
                 SqlModel.RecreateTable(names[i]);
-                excel.SelectWorkSheet(i+1);
-                for (int j = 0; j <= excel.GetColumn(); j++)
+                _excel.SelectWorkSheet(i+1);
+                for (var j = 0; j <= _excel.GetColumn(); j++)
                 {
                     if (j % 50 == 0) Console.WriteLine($"{j} elements");
-                    var word = excel.ReadWordFromExcelString(j);
+                    var word = _excel.ReadWordFromExcelString(j);
                     if(word != null) list.Add((Word)word);
                 }
                 SqlModel.InsertTable(names[i], list);
             }
-            excel.Close();
+            _excel.Close();
             CreateKeyBoard();
         }
         public static string ToStringList(List<string> strs)
         {
             try
             {
-                string s = strs[0];
-                if (strs.Count > 1)
+                var s = strs[0];
+                if (strs.Count <= 1) return s;
+                for (var i = 1; i < strs.Count; i++)
                 {
-                    for (int i = 1; i < strs.Count; i++)
-                    {
-                        s = s + " " + strs[i];
-                    }
+                    s = s + " " + strs[i];
                 }
                 return s;
 

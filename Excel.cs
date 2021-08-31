@@ -28,8 +28,8 @@ namespace TelegramBotTranslate
         }
         public string[] GetNames()
         {
-            string[] names = new string[this.GetSheet()];
-            for (int i = 1; i <= this.GetSheet(); i++)
+            string[] names = new string[GetSheet()];
+            for (int i = 1; i <= GetSheet(); i++)
             {
                 this.SelectWorkSheet(i);
                 names[i - 1] = ws.Name;
