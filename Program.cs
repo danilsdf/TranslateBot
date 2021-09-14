@@ -26,7 +26,7 @@ namespace TelegramBotTranslate
         private static void Main()
         {
             _path = PathToNewWords;
-            _botClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
+            _botClient = new TelegramBotClient("YourToken");
             _botClient.OnMessage += BotClient_OnMessage;
             _botClient.OnCallbackQuery += BotClient_OnCallbackQuery;
             _botClient.StartReceiving();
