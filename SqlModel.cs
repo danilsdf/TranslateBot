@@ -2,14 +2,49 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TelegramBotTranslate
 {
     static class SqlModel
     {
+        public static List<string> GetAllTables()
+        {
+            var tables = new List<string>();
+            using (var con = new SqlConnection(GetConnectionString()))
+            {
+                try
+                {
+                    con.Open();
+                    using (var command =
+                        new SqlCommand("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES Where TABLE_NAME <> 'Users' AND TABLE_NAME <> '__MigrationHistory';",
+                            con))
+                    {
+                        var reader = command.ExecuteReader();
+
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                tables.Add(reader.GetValue(0).ToString());
+                            }
+                        }
+
+                        reader.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+            return tables;
+        }
+
         public static bool Check(string tableName)
         {
             bool exists;
@@ -18,12 +53,15 @@ namespace TelegramBotTranslate
                 try
                 {
                     con.Open();
-                    using (SqlCommand command = new SqlCommand($"select case when exists((select * from information_schema.tables where table_name = '" + tableName + "')) then 1 else 0 end", con))
+                    using (SqlCommand command =
+                        new SqlCommand(
+                            $"select case when exists((select * from information_schema.tables where table_name = '" +
+                            tableName + "')) then 1 else 0 end", con))
                     {
 
                         Console.WriteLine(command.CommandText);
                         command.ExecuteNonQuery();
-                        exists = (int)command.ExecuteScalar() == 1;
+                        exists = (int) command.ExecuteScalar() == 1;
                     }
                 }
                 catch (Exception ex)
@@ -43,9 +81,15 @@ namespace TelegramBotTranslate
                         exists = false;
                     }
                 }
+                finally
+                {
+                    con.Close();
+                }
+
+                return exists;
             }
-            return exists;
         }
+
         public static void CreateTable(string tableName)
         {
             using (SqlConnection con = new SqlConnection(GetConnectionString()))
@@ -63,6 +107,10 @@ namespace TelegramBotTranslate
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    con.Close();
                 }
             }
         }
@@ -86,6 +134,10 @@ namespace TelegramBotTranslate
                     Console.WriteLine(ex.Message);
                     CreateTable(tableName);
                 }
+                finally
+                {
+                    con.Close();
+                }
             }
         }
         public static void InsertTable(string tableName, List<Word> words)
@@ -106,6 +158,10 @@ namespace TelegramBotTranslate
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    con.Close();
                 }
             }
         }
@@ -138,6 +194,10 @@ namespace TelegramBotTranslate
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    connection.Close();
                 }
                 Console.WriteLine(words.Count);
                 return words;
