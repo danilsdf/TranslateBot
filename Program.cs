@@ -15,7 +15,6 @@ namespace TelegramBotTranslate
 {
     internal class Program
     {
-        private static TelegramBotClient _botClient;
         public static InlineKeyboardMarkup KeyboardTopic;
         private static Excel _excel;
         private static readonly Random Random = new Random();
@@ -23,14 +22,14 @@ namespace TelegramBotTranslate
         public static UserContext DbUser = new UserContext();
 
         private static string _path;
-        private const string PathToWords = @"C:\Users\Admin\Desktop\Words.xlsx";
-        private const string PathToAllWords = @"C:\Users\Admin\Desktop\All_Words.xlsx";
-        private const string PathToNewWords = @"C:\Users\Admin\Desktop\Repeat_Words.xlsx";
+        private const string PathToWords = @"C:\Users\danil\OneDrive\Рабочий стол\Words.xlsx";
+        private const string PathToAllWords = @"C:\Users\danil\OneDrive\Рабочий стол\All_Words.xlsx";
+        private const string PathToNewWords = @"C:\Users\danil\OneDrive\Рабочий стол\Repeat_Words.xlsx";
 
         private static void Main()
         {
             _path = PathToNewWords;
-            _botClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
+            var botClient = new TelegramBotClient("1123330550:AAH0_SQ4540XLfnugm-m6jLQ78fghew80uM");
             
             using var cts = new CancellationTokenSource();
 
@@ -39,7 +38,7 @@ namespace TelegramBotTranslate
                 AllowedUpdates = new[] { UpdateType.Message, UpdateType.CallbackQuery },
             };
 
-            _botClient.StartReceiving(
+            botClient.StartReceiving(
                 HandleUpdateAsync,
                 HandleErrorAsync,
                 receiverOptions,
@@ -76,8 +75,6 @@ namespace TelegramBotTranslate
             if (message.Text == null) return;
             Console.WriteLine("The " + message.Chat.FirstName + " Write: " + message.Text);
             //return;
-            //if (e.Message.Chat.Id == 386219611) { await BotClient.SendTextMessageAsync(message.Chat, $"Not for you, Kristina)"); return; }
-            //if (e.Message.Chat.Id == 425901772) { await BotClient.SendTextMessageAsync(message.Chat, $"Пошел нахууй!"); return; }
             var users = DbUser.Users;
             foreach (var u in users)
             {
@@ -104,46 +101,46 @@ namespace TelegramBotTranslate
                     switch (message.Text)
                     {
                         case "/start":
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Hi, {message.Chat.FirstName}\n" +
+                            await sender.SendTextMessageAsync(message.Chat, $"Hi, {message.Chat.FirstName}\n" +
                                 $"I was created only for Danil Kravchenko))\n" +
                                 $"So, if you are not Danil, be happy, you are his friend))\n" +
                                 $"Write 3 forms like \"first/second/third\"");
                             u.Topic = "Topic";
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
                                 replyMarkup: KeyboardTopic);
                             break;
                         case "/insert_all":
                             _path = PathToAllWords;
-                            await _botClient.SendTextMessageAsync(message.Chat, $"I am working");
+                            await sender.SendTextMessageAsync(message.Chat, $"I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
                                 replyMarkup: KeyboardTopic);
                             break;
                         case "/insert":
                             _path = PathToWords;
-                            await _botClient.SendTextMessageAsync(message.Chat, $"I am working");
+                            await sender.SendTextMessageAsync(message.Chat, $"I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
                                 replyMarkup: KeyboardTopic);
                             break;
                         case "/insert_new":
                             _path = PathToNewWords;
-                            await _botClient.SendTextMessageAsync(message.Chat, $"I am working");
+                            await sender.SendTextMessageAsync(message.Chat, $"I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
                                 replyMarkup: KeyboardTopic);
                             break;
                         case "/topic":
                             u.Topic = "Topic";
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
+                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
                                 replyMarkup: KeyboardTopic); break;
                         case "/stop":
                             u.Topic = string.Empty;
                             u.TopicWords = new List<Word>();
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Good game\n" +
+                            await sender.SendTextMessageAsync(message.Chat, $"Good game\n" +
                                 $"Hurry back, I`m waiting for you)*");
                             break;
                         default:
@@ -151,11 +148,11 @@ namespace TelegramBotTranslate
                             {
                                 if (message.Type == MessageType.Unknown)
                                 {
-                                    await _botClient.SendTextMessageAsync(message.Chat, $"its Doc");
+                                    await sender.SendTextMessageAsync(message.Chat, $"its Doc");
                                 }
                                 else
                                 {
-                                    await _botClient.SendTextMessageAsync(message.Chat, $"I don`t understand you\n" +
+                                    await sender.SendTextMessageAsync(message.Chat, $"I don`t understand you\n" +
                                                                                        $"Please, write /topic - to select a topic and start a game");
                                 }
 
@@ -166,39 +163,39 @@ namespace TelegramBotTranslate
                             {
                                 if (!u.Output.Contains(str))
                                 {
-                                    await _botClient.SendTextMessageAsync(message.Chat, $"Oh no, you made mistake\n" +
+                                    await sender.SendTextMessageAsync(message.Chat, $"Oh no, you made mistake\n" +
                                         $"The right translate is \"{ToStringList(u.Output)}\"");
                                     var wordsCount = u.TopicWords.Count;
                                     if (wordsCount == 0)
                                     {
                                         u.Topic = string.Empty;
-                                        await _botClient.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
+                                        await sender.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
                                             "write:\n" +
                                             "/topic - to reselect a topic\n" +
                                             "/stop - to stop a game"); return;
                                     }
                                     var n = Random.Next(0, wordsCount);
                                     u.Output = GetStringList(u.TopicWords[n].English);
-                                    await _botClient.SendTextMessageAsync(message.Chat, $"Please, translate it({wordsCount})\n" +
+                                    await sender.SendTextMessageAsync(message.Chat, $"Please, translate it({wordsCount})\n" +
                                         $"{u.TopicWords[n].Russian}");
                                     u.TopicWords.RemoveAt(n);
                                     return;
                                 }
                             }
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Cool, you are right\n" +
+                            await sender.SendTextMessageAsync(message.Chat, $"Cool, you are right\n" +
                                         $"Translate is \"{ToStringList(u.Output)}\"");
                             var wordCount = u.TopicWords.Count;
                             if (wordCount == 0)
                             {
                                 u.Topic = string.Empty;
-                                await _botClient.SendTextMessageAsync(message.Chat, "Good job, you translate all words\n" +
+                                await sender.SendTextMessageAsync(message.Chat, "Good job, you translate all words\n" +
                                     "write:\n" +
                                     "/topic - to reselect a topic\n" +
                                     "/stop - to stop a game"); return;
                             }
                             var nt = Random.Next(0, wordCount);
                             u.Output = GetStringList(u.TopicWords[nt].English);
-                            await _botClient.SendTextMessageAsync(message.Chat, $"Please, translate it({wordCount})\n" +
+                            await sender.SendTextMessageAsync(message.Chat, $"Please, translate it({wordCount})\n" +
                                 $"{u.TopicWords[nt].Russian}");
                             u.TopicWords.RemoveAt(nt);
                             break;
@@ -207,7 +204,7 @@ namespace TelegramBotTranslate
             }
             await DbUser.SaveChangesAsync();
         }
-        private static async Task BotClient_OnCallbackQuery(ITelegramBotClient botClient, CallbackQuery callbackQuery)
+        private static async Task BotClient_OnCallbackQuery(ITelegramBotClient sender, CallbackQuery callbackQuery)
         {   
             Console.WriteLine("The " + callbackQuery.From.Id + " Select: " + callbackQuery.Data);
             //return;
@@ -215,7 +212,7 @@ namespace TelegramBotTranslate
             foreach (var u in users)
             {
                 if (u.ChatId != callbackQuery.From.Id || u.Topic != "Topic") continue;
-                await _botClient.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
+                await sender.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
                 {
                     u.Topic = callbackQuery.Data;
                     u.TopicWords = SqlModel.GetWords(callbackQuery.Data).Select(s => s.Trim()).ToList();
@@ -223,13 +220,13 @@ namespace TelegramBotTranslate
                 var wordCount = u.TopicWords.Count;
                 if (wordCount == 0)
                 {
-                    await _botClient.SendTextMessageAsync(callbackQuery.From.Id, "There are some problems with table, try to insert one more time");
+                    await sender.SendTextMessageAsync(callbackQuery.From.Id, "There are some problems with table, try to insert one more time");
                     Console.WriteLine("There are some problems with table, try to insert one more time");
                     break;
                 }
                 var nt = Random.Next(1, wordCount);
                 u.Output = GetStringList(u.TopicWords[nt].English.Trim());
-                await _botClient.SendTextMessageAsync(callbackQuery.From.Id, $"Please, translate it({wordCount})\n" +
+                await sender.SendTextMessageAsync(callbackQuery.From.Id, $"Please, translate it({wordCount})\n" +
                                                                             $"{u.TopicWords[nt].Russian}");
                 u.TopicWords.RemoveAt(nt);
                 break;
