@@ -15,5 +15,10 @@
                 English = eng
             };
         }
+
+        public override string ToString()
+        {
+            return $"{Russian} --- {English}";
+        }
     }
 }

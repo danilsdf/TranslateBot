@@ -13,15 +13,15 @@ using Telegram.Bot.Polling;
 
 namespace TelegramBotTranslate
 {
-    internal class Program
+    internal static class Program
     {
-        public static InlineKeyboardMarkup KeyboardTopic;
+        private static InlineKeyboardMarkup _keyboardTopic;
         private static Excel _excel;
         private static readonly Random Random = new Random();
         private static bool _here;
-        public static UserContext DbUser = new UserContext();
-
+        private static readonly UserContext DbUser = new UserContext();
         private static string _path;
+
         private const string PathToWords = @"C:\Users\danil\OneDrive\Рабочий стол\Words.xlsx";
         private const string PathToAllWords = @"C:\Users\danil\OneDrive\Рабочий стол\All_Words.xlsx";
         private const string PathToNewWords = @"C:\Users\danil\OneDrive\Рабочий стол\Repeat_Words.xlsx";
@@ -75,7 +75,8 @@ namespace TelegramBotTranslate
             if (message.Text == null) return;
             Console.WriteLine("The " + message.Chat.FirstName + " Write: " + message.Text);
             //return;
-            var users = DbUser.Users;
+            var users2 = DbUser.Users;
+            var users = DbUser.Users.ToList();
             foreach (var u in users)
             {
                 if (u.ChatId == message.Chat.Id)
@@ -93,7 +94,7 @@ namespace TelegramBotTranslate
                 DbUser.SaveChanges();
             }
 
-            users = DbUser.Users;
+            users = DbUser.Users.ToList();
             foreach (var u in users)
             {
                 if (u.ChatId == message.Chat.Id)
@@ -102,96 +103,105 @@ namespace TelegramBotTranslate
                     {
                         case "/start":
                             await sender.SendTextMessageAsync(message.Chat, $"Hi, {message.Chat.FirstName}\n" +
-                                $"I was created only for Danil Kravchenko))\n" +
-                                $"So, if you are not Danil, be happy, you are his friend))\n" +
-                                $"Write 3 forms like \"first/second/third\"");
+                                "I was created only for Danil Kravchenko))\n" +
+                                "So, if you are not Danil, be happy, you are his friend))\n" +
+                                "Write 3 forms like \"first/second/third\"");
                             u.Topic = "Topic";
-                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: KeyboardTopic);
+                            await sender.SendTextMessageAsync(message.Chat, "Select the topic:\n",
+                                replyMarkup: _keyboardTopic);
                             break;
                         case "/insert_all":
                             _path = PathToAllWords;
-                            await sender.SendTextMessageAsync(message.Chat, $"I am working");
+                            await sender.SendTextMessageAsync(message.Chat, "I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: KeyboardTopic);
+                            await sender.SendTextMessageAsync(message.Chat, "Select the topic:\n",
+                                replyMarkup: _keyboardTopic);
                             break;
                         case "/insert":
                             _path = PathToWords;
-                            await sender.SendTextMessageAsync(message.Chat, $"I am working");
+                            await sender.SendTextMessageAsync(message.Chat, "I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: KeyboardTopic);
+                            await sender.SendTextMessageAsync(message.Chat, "Select the topic:\n",
+                                replyMarkup: _keyboardTopic);
                             break;
                         case "/insert_new":
                             _path = PathToNewWords;
-                            await sender.SendTextMessageAsync(message.Chat, $"I am working");
+                            await sender.SendTextMessageAsync(message.Chat, "I am working");
                             InsertFromExcel();
                             u.Topic = "Topic";
-                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: KeyboardTopic);
+                            await sender.SendTextMessageAsync(message.Chat, "Select the topic:\n",
+                                replyMarkup: _keyboardTopic);
                             break;
                         case "/topic":
                             u.Topic = "Topic";
-                            await sender.SendTextMessageAsync(message.Chat, $"Select the topic:\n",
-                                replyMarkup: KeyboardTopic); break;
+                            await sender.SendTextMessageAsync(message.Chat, "Select the topic:\n",
+                                replyMarkup: _keyboardTopic); break;
+                        case "/show_words":
+                            u.Topic = "ShowWords";
+                            await sender.SendTextMessageAsync(message.Chat, "Select the topic:\n",
+                                replyMarkup: _keyboardTopic); break;
                         case "/stop":
                             u.Topic = string.Empty;
+                            u.RightWordCount = null;
+                            u.TopicWordCount = null;
                             u.TopicWords = new List<Word>();
-                            await sender.SendTextMessageAsync(message.Chat, $"Good game\n" +
-                                $"Hurry back, I`m waiting for you)*");
+                            await sender.SendTextMessageAsync(message.Chat, "Good game\n" +
+                                "Hurry back, I`m waiting for you)*");
                             break;
                         default:
                             if (u.Topic == string.Empty)
                             {
                                 if (message.Type == MessageType.Unknown)
                                 {
-                                    await sender.SendTextMessageAsync(message.Chat, $"its Doc");
+                                    await sender.SendTextMessageAsync(message.Chat, "its Doc");
                                 }
                                 else
                                 {
-                                    await sender.SendTextMessageAsync(message.Chat, $"I don`t understand you\n" +
-                                                                                       $"Please, write /topic - to select a topic and start a game");
+                                    await sender.SendTextMessageAsync(message.Chat, "I don`t understand you\n" +
+                                                                                       "Please, write /topic - to select a topic and start a game");
                                 }
-
                                 return;
                             }
                             u.Input = GetStringList(message.Text);
-                            foreach (var str in u.Input)
+                            if (u.Input.Any(str => !u.Output.Contains(str)))
                             {
-                                if (!u.Output.Contains(str))
+                                await sender.SendTextMessageAsync(message.Chat, "Oh no, you made a mistake\n" +
+                                    $"The right translate is \"{ToStringList(u.Output)}\"");
+                                var wordsCount = u.TopicWords.Count;
+                                if (wordsCount == 0)
                                 {
-                                    await sender.SendTextMessageAsync(message.Chat, $"Oh no, you made mistake\n" +
-                                        $"The right translate is \"{ToStringList(u.Output)}\"");
-                                    var wordsCount = u.TopicWords.Count;
-                                    if (wordsCount == 0)
-                                    {
-                                        u.Topic = string.Empty;
-                                        await sender.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
-                                            "write:\n" +
-                                            "/topic - to reselect a topic\n" +
-                                            "/stop - to stop a game"); return;
-                                    }
-                                    var n = Random.Next(0, wordsCount);
-                                    u.Output = GetStringList(u.TopicWords[n].English);
-                                    await sender.SendTextMessageAsync(message.Chat, $"Please, translate it({wordsCount})\n" +
-                                        $"{u.TopicWords[n].Russian}");
-                                    u.TopicWords.RemoveAt(n);
+                                    u.Topic = string.Empty;
+                                    await sender.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
+                                        "write:\n" +
+                                        $"Your result is {u.RightWordCount}/{u.TopicWordCount}\n" +
+                                        "/topic - to reselect a topic\n" +
+                                        "/stop - to stop a game\n" +
+                                        "/insert_new - to insert new words");
                                     return;
                                 }
+                                var n = Random.Next(0, wordsCount);
+                                u.Output = GetStringList(u.TopicWords[n].English);
+                                await sender.SendTextMessageAsync(message.Chat, $"Please, translate it({wordsCount})\n" +
+                                    $"{u.TopicWords[n].Russian}");
+                                u.TopicWords.RemoveAt(n);
+                                return;
                             }
-                            await sender.SendTextMessageAsync(message.Chat, $"Cool, you are right\n" +
+                            await sender.SendTextMessageAsync(message.Chat, "Cool, you are right\n" +
                                         $"Translate is \"{ToStringList(u.Output)}\"");
+                            u.RightWordCount++;
                             var wordCount = u.TopicWords.Count;
                             if (wordCount == 0)
                             {
                                 u.Topic = string.Empty;
-                                await sender.SendTextMessageAsync(message.Chat, "Good job, you translate all words\n" +
+                                await sender.SendTextMessageAsync(message.Chat, "Good job, you translate all word\n" +
                                     "write:\n" +
+                                    $"Your result is {u.RightWordCount}/{u.TopicWordCount}\n" +
                                     "/topic - to reselect a topic\n" +
-                                    "/stop - to stop a game"); return;
+                                    "/stop - to stop a game\n" +
+                                    "/insert_new - to insert new words");
+                                return;
                             }
                             var nt = Random.Next(0, wordCount);
                             u.Output = GetStringList(u.TopicWords[nt].English);
@@ -211,13 +221,22 @@ namespace TelegramBotTranslate
             var users = DbUser.Users;
             foreach (var u in users)
             {
-                if (u.ChatId != callbackQuery.From.Id || u.Topic != "Topic") continue;
+                if (u.ChatId != callbackQuery.From.Id || (u.Topic != "Topic" && u.Topic != "ShowWords")) continue;
+
                 await sender.SendTextMessageAsync(callbackQuery.From.Id, "Please, wait a second)");
+                var topicWords = SqlModel.GetWords(callbackQuery.Data).Select(s => s.Trim()).ToList();
+                if (u.Topic == "ShowWords")
                 {
+                    var allWords = string.Join("\n", topicWords);
+                    await sender.SendTextMessageAsync(callbackQuery.From.Id, allWords);
                     u.Topic = callbackQuery.Data;
-                    u.TopicWords = SqlModel.GetWords(callbackQuery.Data).Select(s => s.Trim()).ToList();
+                    return;
                 }
+                u.Topic = callbackQuery.Data;
+                u.TopicWords = topicWords;
                 var wordCount = u.TopicWords.Count;
+                u.TopicWordCount = wordCount;
+                u.RightWordCount = 0;
                 if (wordCount == 0)
                 {
                     await sender.SendTextMessageAsync(callbackQuery.From.Id, "There are some problems with table, try to insert one more time");
@@ -285,7 +304,7 @@ namespace TelegramBotTranslate
                     inlineKeyboardButtons.Add(new[] { first, second });
                 }
             }
-            KeyboardTopic = new InlineKeyboardMarkup(inlineKeyboardButtons);
+            _keyboardTopic = new InlineKeyboardMarkup(inlineKeyboardButtons);
         }
         private static void InsertFromExcel()
         {

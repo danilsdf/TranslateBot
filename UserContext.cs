@@ -5,7 +5,7 @@ namespace TelegramBotTranslate
     class UserContext : DbContext
     {
         public UserContext()
-            : base("TranslateBotDb")
+            : base("TranslateDb")
         { }
 
         public DbSet<User> Users { get; set; }

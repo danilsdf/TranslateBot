@@ -11,6 +11,8 @@ namespace TelegramBotTranslate
         public List<string> Input { get; set; } = new List<string>();
 
         public string Topic { get; set; }
+        public int? TopicWordCount { get; set; }
+        public int? RightWordCount { get; set; }
         public List<Word> TopicWords { get; set; } = new List<Word>();
     }
 }
